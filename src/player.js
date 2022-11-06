@@ -1,5 +1,5 @@
 class Player{
-    constructor(startingX, startingY, color, pole, radius){
+    constructor(startingX, startingY, color, pole, radius, game){
 
         this.color = color;
         console.log(this.color);
@@ -10,6 +10,8 @@ class Player{
         this.velX = 0, this.velY = 0;
 
         this.isInTheGoal = false;
+
+        this.game = game;
     }
 
     play(xCord, yCord){
@@ -31,15 +33,18 @@ class Player{
             this.x += this.velX;
             this.y += this.velY;
         }
-        if(this.x - this.r <= 0 || this.x + this.r >= gameX){
+        if(this.x - this.r <= 0 || this.x + this.r >= this.game.gameX){
             this.velX = -this.velX;
         }
         
-        if(this.y - this.r < 0 || this.y + this.r > gameY){
+        if(this.y - this.r < 0 || this.y + this.r > this.game.gameY){
             this.velY = -this.velY;
         }
 
-        if(this.x - this.r >= goal[0] && this.x + this.r <= goal[2] && this.y - this.r > goal[1]){
+        if(this.x - this.r >= this.game.goal[0] && 
+            this.x + this.r <= this.game.goal[2] && 
+            this.y - this.r > this.game.goal[1]){
+
             this.isInTheGoal = true;
         }
 
