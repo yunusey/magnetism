@@ -10,7 +10,7 @@ function setup(){
 
     createCanvas(windowWidth, windowHeight);
 
-    gameX = windowWidth - 100, gameY = windowHeight;
+    gameX = windowWidth - 300, gameY = windowHeight;
 
     game = new Game(gameX, gameY, numPlayers);
 

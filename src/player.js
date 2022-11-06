@@ -17,14 +17,11 @@ class Player{
     play(xCord, yCord){
 
         if(this.isInTheGoal){
-            console.log("A Big Problem!")
             this.drawBall();
             return;
         }
 
-        if(this.x - this.r >= this.game.goal[0] && 
-            this.x + this.r <= this.game.goal[2] && 
-            this.y - this.r > this.game.goal[1]){
+        if(this.game.goalArea.isInTheGoal(this.x, this.y, this.r)){
 
 
             let hForce = -0.2;
@@ -35,7 +32,13 @@ class Player{
 
             this.velX += xFrict;
             this.velY += yFrict;
-            console.log(xFrict, this.velX);
+
+            let precisionForConsideringTheBallStopped = 0.0001;
+            if(Math.abs(this.velX) < precisionForConsideringTheBallStopped &&
+            Math.abs(this.velY) < precisionForConsideringTheBallStopped){
+                this.isInTheGoal = true;
+                this.game.timer.addNumberOfPlayersInTheGoalArea();
+            }
         }
 
         else{
@@ -74,7 +77,9 @@ class Player{
     }
 
     drawBall() {
+
         fill(this.color[0], this.color[1], this.color[2], this.color[3]);
         circle(this.x, this.y, this.r * 2);
+
     }
 }
