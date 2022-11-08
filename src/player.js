@@ -2,7 +2,6 @@ class Player{
     constructor(startingX, startingY, color, pole, radius, game){
 
         this.color = color;
-        console.log(this.color);
 
         this.pole = pole;
 
@@ -17,11 +16,10 @@ class Player{
     play(xCord, yCord){
 
         if(this.isInTheGoal){
-            this.drawBall();
             return;
         }
 
-        if(this.game.goalArea.isInTheGoal(this.x, this.y, this.r)){
+        if(this.isInTheGoals(this.x, this.y, this.r)){
 
 
             let hForce = -0.2;
@@ -47,7 +45,7 @@ class Player{
             let hDiff = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
 
             if(hDiff){
-                let hForce = (this.pole ? 1 : -1) * Math.min(100 / Math.pow(hDiff, 2), 0.05);
+                let hForce = (this.pole ? -1 : 1) * Math.min(100 / Math.pow(hDiff, 2), 0.05);
                 let xForce = hForce * (xDiff / Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)));
                 let yForce = hForce * (yDiff / Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)));
 
@@ -69,11 +67,9 @@ class Player{
             if((this.y - this.r < 0 && this.velY < 0) || 
             (this.y + this.r >= this.game.gameY && this.velY > 0)){
                 this.velY = -this.velY;
-                console.log(this.velY);
             }
         }
 
-        this.drawBall();
     }
 
     drawBall() {
@@ -81,5 +77,15 @@ class Player{
         fill(this.color[0], this.color[1], this.color[2], this.color[3]);
         circle(this.x, this.y, this.r * 2);
 
+    }
+
+    isInTheGoals(x, y, r){
+        for(let i = 0; i < this.game.goalAreas.length; i++){
+            let isInTheGoal = this.game.goalAreas[i].isInTheGoal(x, y, r, this.pole);
+            if(isInTheGoal){
+                return true;
+            }
+        }
+        return false;
     }
 }

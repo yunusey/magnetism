@@ -1,17 +1,39 @@
 class Game{
 
-    constructor(gameX, gameY, numPlayers){
+    constructor(gameX, gameY, numPlayers, playerCords, goalCords){
 
         this.players = [];
 
-        let colorPoleNorth = Array(0, 0, 255, 0);
-        let colorPoleSouth = Array(255, 0, 0, 0);
+        let colorPoleNorth = Array(0, 0, 255, 255);
+        let colorPoleSouth = Array(255, 0, 0, 255);
 
-        this.goal = [gameX / 2 - 100, gameY - 150, gameX / 2 + 100, gameY - 50];
-        this.goalArea = new goalArea(this.goal, Array(255, 255, 0, 200))
+        this.goalCords = goalCords;
+        this.goalAreas = [];
+        for(let i = 0; i < goalCords.length; i++){
+
+            let shape = this.goalCords[i][this.goalCords[i].length - 2];
+            let restriction = this.goalCords[i][this.goalCords[i].length - 1];
+
+            if(shape == "rect"){
+                let newGoalCord = [
+                    this.goalCords[i][0], this.goalCords[i][1],
+                    this.goalCords[i][2], this.goalCords[i][3]
+                ];
+                let newGoalArea = new goalArea(newGoalCord, Array(255, 255, 0, 200), shape, restriction);
+                this.goalAreas.push(newGoalArea);
+            }
+
+            else if(shape == "circle"){
+                let newGoalCord = [
+                    this.goalCords[i][0], this.goalCords[i][1], this.goalCords[i][2]
+                ];
+                let newGoalArea = new goalArea(newGoalCord, Array(255, 255, 0, 200), shape, restriction);
+                this.goalAreas.push(newGoalArea);
+            }
+        }
 
         this.timerCord = [gameX, 100, windowWidth, 300];
-        this.timer = new Timer(1, 0, this.timerCord);
+        this.timer = new Timer(1, 0, this.timerCord, numPlayers);
 
         this.expectedRangeX = [25, gameX - 25];
         this.expectedRangeY = [25, gameY - 25];
@@ -19,7 +41,8 @@ class Game{
         this.gameX = gameX;
         this.gameY = gameY;
 
-
+        // For given numPlayers, creates random players.
+        /*        
         for(let i = 0; i < numPlayers; i++){
 
             let randX = Math.random() * (this.expectedRangeX[1] - this.expectedRangeX[0]) + this.expectedRangeX[0];
@@ -48,17 +71,36 @@ class Game{
             let newPlayer = new Player(randX, randY, Array((i % 2 == 0) * 255, 0, (i % 2 != 0) * 255, 255), i % 2 == 0, 25, this);
             this.players.push(newPlayer);
         }
+        */
+
+        // For given coords, creates players in those coords.
+        for(let i = 0; i < numPlayers; i++){
+
+            let isNorth = playerCords[i][2];
+            let colorForPlayer = isNorth ? colorPoleNorth : colorPoleSouth;
+            let newPlayer = new Player(playerCords[i][0], playerCords[i][1], colorForPlayer, isNorth, 25, this);
+            this.players.push(newPlayer);
+
+        }
 
     }
 
-    drawGame(mouseCordX, mouseCordY){
+    playGame(mouseCordX, mouseCordY){
+        for(let i = 0; i < numPlayers; i++){
+            this.players[i].play(mouseCordX, mouseCordY);
+        }
+    }
+
+    drawGame(){
         
-        this.goalArea.drawObject();
+        for(let i = 0; i < this.goalAreas.length; i++){
+            this.goalAreas[i].drawObject();
+        }
         this.timer.drawObject();
 
         noStroke();
         for(let i = 0; i < numPlayers; i++){
-            this.players[i].play(mouseCordX, mouseCordY);
+            this.players[i].drawBall();
         }
 
     }
@@ -66,40 +108,79 @@ class Game{
 
 
 class goalArea{
-    constructor(goal, color){
-        this.goal = goal;
+    constructor(goalCord, color, shape, restriction){
+        this.goalCord = goalCord;
         this.color = color;
+        this.shape = shape;
+
+        this.restriction = restriction;
+
     }
 
-    isInTheGoal(xCord, yCord, radius){
-        let isInTheGoal = 
-            xCord - radius >= this.goal[0] && 
-            xCord + radius <= this.goal[2] && 
-            yCord - radius >= this.goal[1] &&
-            yCord + radius <= this.goal[3];
-        
-        return isInTheGoal;
+    isInTheGoal(xCord, yCord, radius, pole){
+
+        if(this.restriction == 1 && !pole){
+            return false;
+        }
+
+        else if(this.restriction == 2 && pole){
+            return false;
+        }
+
+        if(this.shape == "rect"){
+
+            let isInTheGoal = 
+                xCord - radius >= this.goalCord[0] && 
+                xCord + radius <= this.goalCord[2] && 
+                yCord - radius >= this.goalCord[1] &&
+                yCord + radius <= this.goalCord[3];
+            return isInTheGoal;
+
+        }    
+        else if(this.shape == "circle"){
+
+            let xDiff = Math.abs(xCord - this.goalCord[0]);
+            let yDiff = Math.abs(yCord - this.goalCord[1]);
+
+            let hDiff = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)) + radius;
+            if(hDiff <= this.goalCord[2]){
+                return true;
+            }
+            return false;
+        }
     }
 
     drawObject(){
 
         stroke(255);
         fill(this.color[0], this.color[1], this.color[2], this.color[3]);
-        rect(this.goal[0], this.goal[1], this.goal[2] - this.goal[0], this.goal[3] - this.goal[1]);
-        fill(255, 200);
-        circle((this.goal[0] + this.goal[2]) / 2, (this.goal[1] + this.goal[3]) / 2, 40);
-
+        if(this.shape == "rect"){
+            rect(
+                this.goalCord[0], 
+                this.goalCord[1], 
+                this.goalCord[2] - this.goalCord[0], 
+                this.goalCord[3] - this.goalCord[1]
+                );
+        }
+        else if(this.shape == "circle"){
+            circle(
+                this.goalCord[0], 
+                this.goalCord[1], 
+                this.goalCord[2] * 2
+                );
+        }
     }
 }
 
 class Timer{
-    constructor(minutes, seconds, cord){
+    constructor(minutes, seconds, cord, numPlayers){
 
         this.minutes = minutes;
         this.seconds = seconds;
 
         this.cord = cord;
 
+        this.numPlayers = numPlayers;
         this.numPlayersLeft = numPlayers;
         this.numPlayersInTheGoalArea = 0;
     }
@@ -114,12 +195,13 @@ class Timer{
         //textAlign(CENTER, CENTER);
         textSize(100);
         stroke(255);
-        text(stringToDisplay, this.cord[0], this.cord[1], this.cord[2], this.cord[3]);
+        fill(255);
+        text(stringToDisplay, this.cord[0] + 10, this.cord[1], this.cord[2] + 19, this.cord[3]);
 
-        let leftPlayersCounter = this.numPlayersInTheGoalArea + "/" + numPlayers;
-        text(leftPlayersCounter, this.cord[0], this.cord[1] + 100, this.cord[2], this.cord[3] + 100);
+        let leftPlayersCounter = this.numPlayersInTheGoalArea + "/" + this.numPlayers;
+        text(leftPlayersCounter, this.cord[0] + 10, this.cord[1] + 100, this.cord[2] + 10, this.cord[3] + 100);
 
-        if(frameCount % 60 == 0){
+        if(frameCount % 60 == 0 && !isGameFinished){
             if(this.seconds > 0){
                 this.seconds--;
             }
@@ -129,13 +211,20 @@ class Timer{
             }
         }
 
-        if(this.minutes == 0 && this.seconds == 0){
-            finishTheGame();
+        if (!isGameFinished && ((this.minutes == 0 && this.seconds == 0) || this.numPlayersLeft == 0)){
+            this.finishTheGame();
+        }
+
+        if(isGameFinished){
+            textSize(60);
+            stroke(255);
+            fill(0, 255, 0, 255);
+            text("Game\nFinished" + '⏵', this.cord[0] + 10, this.cord[1] + 300, this.cord[2] + 10, this.cord[3] + 300);
         }
     }
 
     finishTheGame(){
-
+        isGameFinished = true;
     }
 
     addNumberOfPlayersInTheGoalArea(){
