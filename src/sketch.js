@@ -6,8 +6,9 @@ let numPlayers = 2;
 
 let playerCoords = [];
 let goalCords = [];
+let cannonCords = [];
 
-let areBoundariesAllowed = false;
+let areBoundariesAllowed = true;
 
 let gameX = null, gameY = null;
 
@@ -30,10 +31,19 @@ function createPlayerCords(){
     // 2, just south pole can be affected,
 
     return [
-        [gameX / 2 - 200, gameY / 2 - 100, -2, 2, 1, false],
-        [gameX / 2 + 200, gameY / 2 + 100, 2, -2, 10, true]
+        [gameX / 2 - 200, gameY / 2 - 100, -1, 1, 1, false],
+        [gameX / 2 + 200, gameY / 2 + 100, 1, -1, 1, true]
     ];
 
+}
+
+function createCannonCords(){
+
+    return [
+        [800, 400, 120, 20, false],
+        [200, 600, 30, 20, true]
+    ];
+    
 }
 
 function setup(){
@@ -44,8 +54,17 @@ function setup(){
 
     playerCoords = createPlayerCords();
     goalCords = createGoalCords();
+    cannonCords = createCannonCords();
 
-    game = new Game(gameX, gameY, numPlayers, playerCoords, goalCords, areBoundariesAllowed);
+    game = new Game(
+        gameX, 
+        gameY, 
+        numPlayers, 
+        playerCoords, 
+        goalCords, 
+        cannonCords, 
+        areBoundariesAllowed
+    );
 
 }
 
