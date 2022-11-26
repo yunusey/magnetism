@@ -1,12 +1,13 @@
 class Player{
-    constructor(startingX, startingY, color, pole, radius, game){
+    constructor(startingX, startingY, velX, velY, color, pole, power, radius, game){
 
         this.color = color;
 
         this.pole = pole;
+        this.power = power;
 
         this.x = startingX, this.y = startingY, this.r = radius;
-        this.velX = 0, this.velY = 0;
+        this.velX = velX, this.velY = velY;
 
         this.isInTheGoal = false;
 
@@ -45,7 +46,7 @@ class Player{
             let hDiff = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
 
             if(hDiff){
-                let hForce = (this.pole ? -1 : 1) * Math.min(100 / Math.pow(hDiff, 2), 0.05);
+                let hForce = (this.pole ? -1 : 1) * Math.min(100 / Math.pow(hDiff, 2), 0.05) * this.power;
                 let xForce = hForce * (xDiff / Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)));
                 let yForce = hForce * (yDiff / Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2)));
 
@@ -60,14 +61,17 @@ class Player{
         this.x += this.velX;
         this.y += this.velY;
         if(this.x - this.r <= 0 || this.x + this.r >= this.game.gameX){
-            this.velX = -this.velX;
+            if(this.game.areBoundariesAllowed)
+                this.velX = -this.velX;
+            else
+                this.game.timer.loseTheGame();
         }
         
         if(this.y - this.r < 0 || this.y + this.r >= this.game.gameY){
-            if((this.y - this.r < 0 && this.velY < 0) || 
-            (this.y + this.r >= this.game.gameY && this.velY > 0)){
+            if(this.game.areBoundariesAllowed)
                 this.velY = -this.velY;
-            }
+            else
+                this.game.timer.loseTheGame();
         }
 
     }

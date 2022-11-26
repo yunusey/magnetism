@@ -1,6 +1,6 @@
 class Game{
 
-    constructor(gameX, gameY, numPlayers, playerCords, goalCords){
+    constructor(gameX, gameY, numPlayers, playerCords, goalCords, areBoundariesAllowed){
 
         this.players = [];
 
@@ -41,6 +41,8 @@ class Game{
         this.gameX = gameX;
         this.gameY = gameY;
 
+        this.areBoundariesAllowed = areBoundariesAllowed;
+
         // For given numPlayers, creates random players.
         /*        
         for(let i = 0; i < numPlayers; i++){
@@ -76,9 +78,18 @@ class Game{
         // For given coords, creates players in those coords.
         for(let i = 0; i < numPlayers; i++){
 
-            let isNorth = playerCords[i][2];
+            let isNorth = playerCords[i][5];
             let colorForPlayer = isNorth ? colorPoleNorth : colorPoleSouth;
-            let newPlayer = new Player(playerCords[i][0], playerCords[i][1], colorForPlayer, isNorth, 25, this);
+            let power = playerCords[i][4];
+
+            let newPlayer = new Player(
+                playerCords[i][0], playerCords[i][1], 
+                playerCords[i][2], playerCords[i][3],
+                colorForPlayer, 
+                isNorth, power,
+                25, this
+                );
+                
             this.players.push(newPlayer);
 
         }
@@ -217,14 +228,22 @@ class Timer{
 
         if(isGameFinished){
             textSize(60);
-            stroke(255);
-            fill(0, 255, 0, 255);
+            noStroke();
+            if(isGameWon)
+                fill(0, 255, 0, 255);
+            else
+                fill(255, 0, 0, 255);
             text("Game\nFinished" + '⏵', this.cord[0] + 10, this.cord[1] + 300, this.cord[2] + 10, this.cord[3] + 300);
         }
     }
 
     finishTheGame(){
         isGameFinished = true;
+    }
+
+    loseTheGame(){
+        isGameFinished = true;
+        isGameWon = false;
     }
 
     addNumberOfPlayersInTheGoalArea(){
