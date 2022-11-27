@@ -35,11 +35,14 @@ class Cannon{
             this.angle = angle * 180 / Math.PI;
 
             for(let i = 0; i < this.bullets.length; i++){
+
                 if(this.bullets[i].canShoot){
                     this.bullets[i].a = this.angle;
                     this.bullets[i].play();
                 }
+                
             }
+
         }
 
         if(frameCount % this.freq == 0){
@@ -63,22 +66,31 @@ class Cannon{
         let newBullets = [];
 
         for(let i = 0; i < this.bullets.length; i++){
+
             if(this.bullets[i].canShoot){
                 this.bullets[i].drawObject();
                 newBullets.push(this.bullets[i]);
             }
+
         }
+
         this.bullets = newBullets;
+
     }
 
     handleTouches(xCord, yCord, radius){
+
         for(let i = 0; i < this.bullets.length; i++){
-            let bulletTouches = this.bullets[i].touchesBall(xCord, yCord, radius);
+
+            let bulletTouches = this.bullets[i].touchesParticle(xCord, yCord, radius);
             if(bulletTouches){
                 return true;
             }
+
         }
+
         return false;
+        
     }
 
 }
