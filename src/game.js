@@ -1,6 +1,6 @@
 class Game{
 
-    constructor(gameX, gameY, numPlayers, playerCords, goalCords, areBoundariesAllowed){
+    constructor(gameX, gameY, numPlayers, playerCords, goalCords, cannonCords, areBoundariesAllowed){
 
         this.players = [];
 
@@ -43,39 +43,6 @@ class Game{
 
         this.areBoundariesAllowed = areBoundariesAllowed;
 
-        // For given numPlayers, creates random players.
-        /*        
-        for(let i = 0; i < numPlayers; i++){
-
-            let randX = Math.random() * (this.expectedRangeX[1] - this.expectedRangeX[0]) + this.expectedRangeX[0];
-            let randY = Math.random() * (this.expectedRangeY[1] - this.expectedRangeY[0]) + this.expectedRangeY[0];
-
-            if(randX + 25 >= this.goal[0] && randX - 25 <= this.goal[2]){
-                let newExpectedRangeY1 = [25, this.goal[1] - 25];
-                let newExpectedRangeY2 = [this.goal[3] + 25, this.gameY - 25];
-
-                let yRange = 0;
-                yRange += Math.max(0, newExpectedRangeY1[1] - newExpectedRangeY1[0]);
-                yRange += Math.max(0, newExpectedRangeY2[1] - newExpectedRangeY2[0]);
-
-                randY = Math.random() * yRange;
-
-                if(randY > newExpectedRangeY1[1] + newExpectedRangeY1[0]){
-                    let diff = randY - newExpectedRangeY1[0] - newExpectedRangeY1[1];
-                    randY = newExpectedRangeY2[0] + diff;
-                }
-                else{
-                    randY += newExpectedRangeY1[0];
-                }
-            }
-
-
-            let newPlayer = new Player(randX, randY, Array((i % 2 == 0) * 255, 0, (i % 2 != 0) * 255, 255), i % 2 == 0, 25, this);
-            this.players.push(newPlayer);
-        }
-        */
-
-        // For given coords, creates players in those coords.
         for(let i = 0; i < numPlayers; i++){
 
             let isNorth = playerCords[i][5];
@@ -94,12 +61,44 @@ class Game{
 
         }
 
+        this.cannonCords = cannonCords;
+        this.cannons = [];
+        for(let i = 0; i < this.cannonCords.length; i++){
+            let newCannon = new Cannon(
+                this.cannonCords[i][0], 
+                this.cannonCords[i][1],
+                this.cannonCords[i][2],
+                this.cannonCords[i][3],
+                this.cannonCords[i][4]
+                );
+            this.cannons.push(newCannon);
+        }
+
     }
 
     playGame(mouseCordX, mouseCordY){
+
         for(let i = 0; i < numPlayers; i++){
             this.players[i].play(mouseCordX, mouseCordY);
         }
+
+        for(let i = 0; i < this.cannons.length; i++){
+            this.cannons[i].play(mouseCordX, mouseCordY);
+        }
+
+        for(let i = 0; i < numPlayers; i++){
+            for(let j = 0; j < this.cannons.length; j++){
+                let touches = this.cannons[j].handleTouches(
+                    this.players[i].x, 
+                    this.players[i].y, 
+                    this.players[i].r
+                );
+                if(touches){
+                    this.timer.loseTheGame();
+                }
+            }
+        }
+
     }
 
     drawGame(){
@@ -107,12 +106,17 @@ class Game{
         for(let i = 0; i < this.goalAreas.length; i++){
             this.goalAreas[i].drawObject();
         }
-        this.timer.drawObject();
 
         noStroke();
         for(let i = 0; i < numPlayers; i++){
             this.players[i].drawBall();
         }
+
+        for(let i = 0; i < this.cannons.length; i++){
+            this.cannons[i].drawObject();
+        }
+
+        this.timer.drawObject();
 
     }
 }
